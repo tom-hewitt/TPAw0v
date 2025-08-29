@@ -102,3 +102,14 @@ echo 1 | tee $(ls /sys/devices/system/cpu/cpu?/cpuidle/state?/disable) 2> /dev/n
 On zcu quad core dev board, this should write to 8 files in total (each CPU has 2 idle states: state0 and state1).
 
 
+## TPIU Enablement ##
+
+Enabling the TPIU to use either the fpga or external debugger involves regenerating the FSBL using the Vitis application. Note that petalinux handles pmufw creation.
+
+To Regenerate FSBL:
+1. Export Hardware definition (.xsa) from Vivado 
+2. Create a new application project
+3. Move to the "Create a new platform from hardware (XSA)" and add the .xsa file of choice
+4.  Choose the `Zynq MP FSBL` template 
+5. Build the FSBL
+6. Import into Petalinux project using the `--fsbl` flag for `petalinux-package boot`
