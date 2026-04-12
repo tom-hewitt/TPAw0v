@@ -1,4 +1,4 @@
-CFLAGS = -Iinclude -Wall -O2
+CFLAGS = -Iinclude -Wall -O2 -g
 LDFLAGS = -lpthread -no-pie
 SRC_FILES := $(wildcard src/*.c)
 O_FILES := $(patsubst src/%.c,src/%.o,$(SRC_FILES))
