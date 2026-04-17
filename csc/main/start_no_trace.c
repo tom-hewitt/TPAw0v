@@ -16,18 +16,12 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <time.h>
-#include "common.h"
 #include "pmu_event.h"
-#include "cs_etm.h"
-#include "cs_config.h"
-#include "cs_soc.h"
-
-extern volatile ETM_interface *etms[4];
-extern volatile TMC_interface *tmc3;
+#include "common.h"
 
 int main(int argc, char *argv[])
 {
-    printf("Vanilla ZCU102 self-host trace demo.\n");
+    printf("Vanilla ZCU102 no trace demo.\n");
     printf("Build: on %s at %s\n\n", __DATE__, __TIME__);
 
     pid_t target_pid;
@@ -38,21 +32,6 @@ int main(int argc, char *argv[])
     // Pin to the 4-th core, because we will use 1st core to run the target application.
     pin_to_core(3);
 
-    // configure CoreSight to use ETR; The addr and size is the On-Chip memory (OCM) on chip.
-    // You can change the addr and size to use any other
-    // uint64_t buf_addr = 0x00FFE00000; // RPU 0 ATCM
-    // uint32_t buf_size = 1024 * 64;
-    uint64_t buf_addr = 0x00FFFC0000;  //OCM
-    uint32_t buf_size = 1024 * 256;
-
-    cs_config_etr_mp(buf_addr, buf_size);
-
-    // prepare the trace data buffer
-    clear_buffer(buf_addr, buf_size);
-
-    // initialize ETM
-    config_etm_n(etms[0], 0, 1);
-
     struct timespec start_time, end_time;
     clock_gettime(CLOCK_MONOTONIC, &start_time);
 
@@ -61,15 +40,6 @@ int main(int argc, char *argv[])
     if (target_pid == 0)
     {
         pin_to_core(0);
-        uint64_t child_pid = (uint64_t) getpid();
-
-        // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
-        // with the program counter in the range of 0x400000 to 0x500000
-        etm_set_contextid_cmp(etms[0], child_pid);
-        etm_register_range(etms[0], 0x400000, 0x500000, 1);
-
-        // Enable ETM, start trace session
-        etm_enable(etms[0]);
 
         // execute target application
         execl("./hello_ETM", "hello_ETM", NULL);
@@ -87,14 +57,6 @@ int main(int argc, char *argv[])
     waitpid(target_pid, &status, 0);
 
     clock_gettime(CLOCK_MONOTONIC, &end_time);
-
-    // Disable ETM, our trace session is done
-    etm_disable(etms[0]);
-
-    munmap((void *)etms[0], sizeof(ETM_interface));
-
-    // drain the TMC3 (ETR) and write the trace data to files
-    tmc_drain_data(tmc3);
 
     // Calculate and print the execution time
     double execution_time = (end_time.tv_sec - start_time.tv_sec) + (end_time.tv_nsec - start_time.tv_nsec) / 1e9;
