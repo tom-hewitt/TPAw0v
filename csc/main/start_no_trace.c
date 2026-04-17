@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
         pin_to_core(0);
 
         // execute target application
-        execl("./hello_ETM", "hello_ETM", NULL);
+        execl("/usr/bin/cp", "cp", "-r", "/home/petalinux/glibc", "/home/petalinux/glibc_copy", NULL);
         perror("execl failed. Target application failed to start.");
         exit(1);
     }

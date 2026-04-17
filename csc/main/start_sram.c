@@ -15,6 +15,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/wait.h>
+#include <time.h>
 #include "common.h"
 #include "pmu_event.h"
 #include "cs_etm.h"
@@ -67,43 +68,50 @@ int main(int argc, char *argv[])
     // initialize ETM
     config_etm_n(etms[0], 0, 1);
 
+    struct timespec start_time, end_time;
+    clock_gettime(CLOCK_MONOTONIC, &start_time);
+
     // fork a child to execute the target application
-    for (int i = 0; i < 1; i++)
+    target_pid = fork();
+    if (target_pid == 0)
     {
-        target_pid = fork();
-        if (target_pid == 0)
-        {
-            pin_to_core(i);
-            uint64_t child_pid = (uint64_t) getpid();
+        pin_to_core(0);
+        uint64_t child_pid = (uint64_t) getpid();
 
-            // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
-            // with the program counter in the range of 0x400000 to 0x500000
-            etm_set_contextid_cmp(etms[0], child_pid);
-            etm_register_range(etms[0], 0x400000, 0x500000, 1);
+        // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
+        // with the program counter in the range of 0x400000 to 0x600000
+        etm_set_contextid_cmp(etms[0], child_pid);
+        etm_register_range(etms[0], 0x400000, 0x600000, 1);
 
-            // Enable ETM, start trace session
-            etm_enable(etms[0]);
+        // Enable ETM, start trace session
+        etm_enable(etms[0]);
 
-            // execute target application
-            execl("./hello_ETM", "hello_ETM", NULL);
-            perror("execl failed. Target application failed to start.");
-            exit(1);
-        }
-        else if (target_pid < 0)
-        {
-            perror("fork");
-            return 1;
-        }
+        // execute target application
+        execl("/usr/bin/cp", "cp", "-r", "/home/petalinux/glibc", "/home/petalinux/glibc_copy", NULL);
+        perror("execl failed. Target application failed to start.");
+        exit(1);
+    }
+    else if (target_pid < 0)
+    {
+        perror("fork");
+        return 1;
     }
 
     // wait for target application to finish
     int status;
     waitpid(target_pid, &status, 0);
 
+    clock_gettime(CLOCK_MONOTONIC, &end_time);
+
     // Disable ETM, our trace session is done. Poller will print trace data.
     etm_disable(etms[0]);
 
     read_trace_data_from_SRAM();
+
+    // Calculate and print the execution time
+    double execution_time = (end_time.tv_sec - start_time.tv_sec) +
+                            (end_time.tv_nsec - start_time.tv_nsec) / 1e9;
+    printf("Execution time: %f seconds\n", execution_time);
 
     return 0;
 }

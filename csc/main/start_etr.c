@@ -64,15 +64,15 @@ int main(int argc, char *argv[])
         uint64_t child_pid = (uint64_t) getpid();
 
         // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
-        // with the program counter in the range of 0x400000 to 0x500000
+        // with the program counter in the range of 0x400000 to 0x600000
         etm_set_contextid_cmp(etms[0], child_pid);
-        etm_register_range(etms[0], 0x400000, 0x500000, 1);
+        etm_register_range(etms[0], 0x400000, 0x600000, 1);
 
         // Enable ETM, start trace session
         etm_enable(etms[0]);
 
         // execute target application
-        execl("./hello_ETM", "hello_ETM", NULL);
+        execl("/usr/bin/cp", "cp", "-r", "/home/petalinux/glibc", "/home/petalinux/glibc_copy", NULL);
         perror("execl failed. Target application failed to start.");
         exit(1);
     }
