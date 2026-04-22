@@ -21,6 +21,11 @@
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <command> [args...]\n", argv[0]);
+        return 1;
+    }
+
     printf("Vanilla ZCU102 no trace demo.\n");
     printf("Build: on %s at %s\n\n", __DATE__, __TIME__);
 
@@ -42,8 +47,8 @@ int main(int argc, char *argv[])
         pin_to_core(0);
 
         // execute target application
-        execl("/usr/bin/cp", "cp", "-r", "/home/petalinux/glibc", "/home/petalinux/glibc_copy", NULL);
-        perror("execl failed. Target application failed to start.");
+        execvp(argv[1], &argv[1]);
+        perror("execvp failed. Target application failed to start.");
         exit(1);
     }
     else if (target_pid < 0)
