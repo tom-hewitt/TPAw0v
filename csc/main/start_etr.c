@@ -71,7 +71,6 @@ int main(int argc, char *argv[])
         // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
         // with the program counter in the range of 0x400000 to 0x600000
         etm_set_contextid_cmp(etms[0], child_pid);
-        etm_register_range(etms[0], 0x400000, 0x600000, 1);
 
         // Enable ETM, start trace session
         etm_enable(etms[0]);
