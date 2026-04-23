@@ -111,9 +111,9 @@ void cs_config_etr_mp(uint64_t buf_addr, uint32_t buf_size) {
 	printf("ETR assumes the buffer size is %d bytes\n", buf_size);
 
 	etms[0] = (volatile ETM_interface *) cs_register(A53_0_etm);
-	// etms[1] = (volatile ETM_interface *) cs_register(A53_1_etm);
-	// etms[2] = (volatile ETM_interface *) cs_register(A53_2_etm);
-	// etms[3] = (volatile ETM_interface *) cs_register(A53_3_etm);
+	etms[1] = (volatile ETM_interface *) cs_register(A53_1_etm);
+	etms[2] = (volatile ETM_interface *) cs_register(A53_2_etm);
+	etms[3] = (volatile ETM_interface *) cs_register(A53_3_etm);
     replicator = (volatile Replicator_interface *) cs_register(Replic);
     funnel1 = (volatile Funnel_interface *) cs_register(Funnel1);
     funnel2 = (volatile Funnel_interface *) cs_register(Funnel2);
