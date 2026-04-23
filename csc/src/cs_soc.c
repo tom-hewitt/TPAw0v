@@ -86,7 +86,7 @@ void tmc_drain_data(volatile TMC_interface *tmc)
     uint32_t data = 0;
     while(1) {
         data = tmc->ram_read_data;
-        if (tmc->ram_read_pt != tmc->ram_write_pt) {
+        if (data != 0xffffffff && tmc->ram_read_pt != tmc->ram_write_pt) {
             fprintf(fp2, "0x%08X\n", data);
             fwrite((void *)&data, sizeof(uint32_t), 1, fp3);
         } else {
