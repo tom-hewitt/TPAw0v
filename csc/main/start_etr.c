@@ -108,16 +108,17 @@ int main(int argc, char *argv[])
     etm_disable(etms[1]);
     etm_disable(etms[2]);
 
+    // Calculate and print the execution time
+    double execution_time = (end_time.tv_sec - start_time.tv_sec) +
+                            (end_time.tv_nsec - start_time.tv_nsec) / 1e9;
+    printf("Execution time: %f seconds\n", execution_time);
+
     munmap((void *)etms[0], sizeof(ETM_interface));
     munmap((void *)etms[1], sizeof(ETM_interface));
     munmap((void *)etms[2], sizeof(ETM_interface));
 
     // drain the TMC3 (ETR) and write the trace data to files
     tmc_drain_data(tmc3);
-
-    // Calculate and print the execution time
-    double execution_time = (end_time.tv_sec - start_time.tv_sec) + (end_time.tv_nsec - start_time.tv_nsec) / 1e9;
-    printf("Execution time: %f seconds\n", execution_time);
 
     return 0;
 }
