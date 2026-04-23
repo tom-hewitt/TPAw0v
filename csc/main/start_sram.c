@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
 
     // initialize ETM
     config_etm_n(etms[0], 0, 1);
+    config_etm_n(etms[1], 0, 2);
+    config_etm_n(etms[2], 0, 3);
 
     struct timespec start_time, end_time;
     clock_gettime(CLOCK_MONOTONIC, &start_time);
