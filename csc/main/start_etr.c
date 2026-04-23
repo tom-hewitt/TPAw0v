@@ -75,10 +75,6 @@ int main(int argc, char *argv[])
         sched_yield();
         uint64_t child_pid = (uint64_t) getpid();
 
-        // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
-        // with the program counter in the range of 0x400000 to 0x600000
-        etm_set_contextid_cmp(etms[0], child_pid);
-
         // Enable ETM, start trace session
         etm_enable(etms[0]);
         etm_enable(etms[1]);
