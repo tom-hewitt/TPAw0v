@@ -84,11 +84,15 @@ void tmc_drain_data(volatile TMC_interface *tmc)
     printf("RAM write pointe %x\n", tmc->ram_write_pt);
 
     uint32_t data = 0;
-    while (tmc->ram_read_pt != tmc->ram_write_pt) {
+    while(1) {
         data = tmc->ram_read_data;
-        fprintf(fp2, "0x%08X\n", data);
-        fwrite((void *)&data, sizeof(uint32_t), 1, fp3);
-    };
+        if (tmc->ram_read_pt != tmc->ram_write_pt) {
+            fprintf(fp2, "0x%08X\n", data);
+            fwrite((void *)&data, sizeof(uint32_t), 1, fp3);
+        } else {
+            break;
+        }
+    }
 
     fclose(fp2);
     fclose(fp3);
