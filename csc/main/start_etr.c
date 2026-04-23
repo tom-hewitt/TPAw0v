@@ -76,7 +76,12 @@ int main(int argc, char *argv[])
         sched_setaffinity(0, sizeof(cpu_set_t), &set);
         sched_yield();
 
-        // Enable ETM, start trace session
+        // Trace all addresses
+        etm_register_range(etms[0], 0x0, 0xffffffffffffffff, 1);
+        etm_register_range(etms[1], 0x0, 0xffffffffffffffff, 1);
+        etm_register_range(etms[2], 0x0, 0xffffffffffffffff, 1);
+
+        // Enable ETMs, start trace session
         etm_enable(etms[0]);
         etm_enable(etms[1]);
         etm_enable(etms[2]);
@@ -104,6 +109,8 @@ int main(int argc, char *argv[])
     etm_disable(etms[2]);
 
     munmap((void *)etms[0], sizeof(ETM_interface));
+    munmap((void *)etms[1], sizeof(ETM_interface));
+    munmap((void *)etms[2], sizeof(ETM_interface));
 
     // drain the TMC3 (ETR) and write the trace data to files
     tmc_drain_data(tmc3);

@@ -91,7 +91,12 @@ int main(int argc, char *argv[])
         sched_setaffinity(0, sizeof(cpu_set_t), &set);
         sched_yield();
 
-        // Enable ETM, start trace session
+        // Trace all addresses
+        etm_register_range(etms[0], 0x0, 0xffffffffffffffff, 1);
+        etm_register_range(etms[1], 0x0, 0xffffffffffffffff, 1);
+        etm_register_range(etms[2], 0x0, 0xffffffffffffffff, 1);
+
+        // Enable ETMs, start trace session
         etm_enable(etms[0]);
         etm_enable(etms[1]);
         etm_enable(etms[2]);
