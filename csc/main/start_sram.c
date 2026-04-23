@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
         CPU_SET(2, &set);
         sched_setaffinity(0, sizeof(cpu_set_t), &set);
         sched_yield();
-        uint64_t child_pid = (uint64_t) getpid();
 
         // Enable ETM, start trace session
         etm_enable(etms[0]);

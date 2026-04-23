@@ -13,15 +13,15 @@
 */
 
 #define _GNU_SOURCE
-#include "common.h"
-#include "cs_config.h"
-#include "cs_etm.h"
-#include "cs_soc.h"
-#include "pmu_event.h"
 #include <sched.h>
 #include <stdio.h>
 #include <sys/wait.h>
 #include <time.h>
+#include "common.h"
+#include "pmu_event.h"
+#include "cs_etm.h"
+#include "cs_config.h"
+#include "cs_soc.h"
 
 extern volatile ETM_interface *etms[4];
 extern volatile TMC_interface *tmc3;
@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
         CPU_SET(2, &set);
         sched_setaffinity(0, sizeof(cpu_set_t), &set);
         sched_yield();
-        uint64_t child_pid = (uint64_t) getpid();
 
         // Enable ETM, start trace session
         etm_enable(etms[0]);
