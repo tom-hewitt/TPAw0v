@@ -13,6 +13,7 @@
 */
 
 #define _GNU_SOURCE
+#include <sched.h>
 #include <stdio.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
     // Disabling all cpuidle. Access the ETM of an idled core will cause a hang.
     linux_disable_cpuidle();
 
-    // Pin to the 4-th core, because we will use 1st core to run the target application.
+    // Pin to the 4-th core, because we will use cores 1-3 to run the target application.
     pin_to_core(3);
 
     struct timespec start_time, end_time;
@@ -44,7 +45,13 @@ int main(int argc, char *argv[])
     target_pid = fork();
     if (target_pid == 0)
     {
-        pin_to_core(0);
+        cpu_set_t set;
+        CPU_ZERO(&set);
+        CPU_SET(0, &set);
+        CPU_SET(1, &set);
+        CPU_SET(2, &set);
+        sched_setaffinity(0, sizeof(cpu_set_t), &set);
+        sched_yield();
 
         // execute target application
         execvp(argv[1], &argv[1]);

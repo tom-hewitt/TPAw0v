@@ -13,6 +13,7 @@
 */
 
 #define _GNU_SOURCE
+#include <sched.h>
 #include <stdio.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
     // Disabling all cpuidle. Access the ETM of an idled core will cause a hang.
     linux_disable_cpuidle();
 
-    // Pin to the 4-th core, because we will use 1st core to run the target application.
+    // Pin to the 4-th core, because we will use cores 1-3 to run the target application.
     pin_to_core(3);
 
     cs_config_SRAM();
@@ -80,7 +81,13 @@ int main(int argc, char *argv[])
     target_pid = fork();
     if (target_pid == 0)
     {
-        pin_to_core(0);
+        cpu_set_t set;
+        CPU_ZERO(&set);
+        CPU_SET(0, &set);
+        CPU_SET(1, &set);
+        CPU_SET(2, &set);
+        sched_setaffinity(0, sizeof(cpu_set_t), &set);
+        sched_yield();
         uint64_t child_pid = (uint64_t) getpid();
 
         // further configure ETM. So that it will only trace the process with pid == child_pid/target_pid
@@ -88,6 +95,8 @@ int main(int argc, char *argv[])
 
         // Enable ETM, start trace session
         etm_enable(etms[0]);
+        etm_enable(etms[1]);
+        etm_enable(etms[2]);
 
         // execute target application
         execvp(argv[1], &argv[1]);
@@ -108,6 +117,8 @@ int main(int argc, char *argv[])
 
     // Disable ETM, our trace session is done. Poller will print trace data.
     etm_disable(etms[0]);
+    etm_disable(etms[1]);
+    etm_disable(etms[2]);
 
     read_trace_data_from_SRAM();
 
